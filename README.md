@@ -49,7 +49,7 @@ Brain_Tumor_Segmentation/
 
 Clone the repository:
 
-git clone https://github.com/your-username/Brain_Tumor_Segmentation.git
+git clone https://github.com/Nandinee-30/Braintumor.git
 
 Move into project directory:
 
