@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brain Tumor AI</title>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#6a5cff,#9333ea);
+    color:white;
+    text-align:center;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(45deg,#00c6ff,#0072ff);
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover{
+    transform:scale(1.05);
+}
+
+/* GLASS */
+.glass{
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(12px);
+    border-radius:15px;
+    padding:20px;
+}
+
+/* CARDS */
+.images{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+}
+
+.card{
+    width:170px;
+    cursor:pointer;
+    transition:0.3s;
+}
+.card:hover{
+    transform:translateY(-8px) scale(1.05);
+}
+
+.card img{
+    width:100%;
+    height:150px;
+    border-radius:15px;
+    object-fit:cover;
+}
+
+/* METRICS */
+.metrics{
+    width:350px;
+    margin:20px auto;
+}
+
+/* HISTORY */
+.history-item{
+    margin:10px;
+}
+
+/* MODAL FIX */
+.modal{
+    display:none;
+    position:fixed;
+    z-index:9999;   /* 🔥 IMPORTANT FIX */
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+}
+
+.modal-content{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100%;
+}
+
+.modal-box{
+    width:500px;
+}
+
+.modal-box img{
+    width:100%;
+    border-radius:10px;
+}
+
+.fade{
+    animation:fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:scale(0.9);}
+    to{opacity:1; transform:scale(1);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container fade">
+
+<h1>🧠 Brain Tumor Detection AI</h1>
+
+<form method="POST" enctype="multipart/form-data">
+<input type="file" name="file" required>
+<button>Predict</button>
+</form>
+
+{% if result %}
+<h2 id="prob">{{result}}%</h2>
+
+<div class="glass metrics">
+<h3>Model Performance</h3>
+<p>🧠 Dice: <b>{{dice}}</b></p>
+<p>📊 IoU: <b>{{iou}}</b></p>
+</div>
+
+<div class="images">
+
+<div class="card glass" onclick="openModal('mri.png','MRI Scan')">
+<img src="/static/mri.png"><p>MRI</p>
+</div>
+
+<div class="card glass" onclick="openModal('overlay.png','Tumor Overlay')">
+<img src="/static/overlay.png"><p>Overlay</p>
+</div>
+
+<div class="card glass" onclick="openModal('mask.png','Mask')">
+<img src="/static/mask.png"><p>Mask</p>
+</div>
+
+<div class="card glass" onclick="openModal('heatmap.png','Heatmap')">
+<img src="/static/heatmap.png"><p>Heatmap</p>
+</div>
+
+<div class="card glass" onclick="openModal('graph.png','Graph')">
+<img src="/static/graph.png"><p>Graph</p>
+</div>
+
+</div>
+
+<br>
+
+<a href="/static/report.pdf" download>
+<button>⬇ Download Report</button>
+</a>
+
+{% endif %}
+
+<h2>History</h2>
+
+{% for h in history %}
+<div class="glass history-item">
+
+{{h.time}} → {{h.prob}}%
+
+<br><br>
+
+<button onclick="openHistory('{{h.time}}','{{h.prob}}')">View</button>
+
+<a href="/delete/{{loop.index0}}">
+<button style="background:red;">Delete</button>
+</a>
+
+</div>
+{% endfor %}
+
+</div>
+
+<!-- 🔥 MODAL -->
+<div id="modal" class="modal" onclick="closeModal()">
+<div class="modal-content">
+
+<div class="modal-box glass" onclick="event.stopPropagation()">
+
+<img id="modal-img">
+
+<h3 id="modal-title"></h3>
+
+<p id="modal-details"></p>
+
+<button onclick="closeModal()">Close</button>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+// IMAGE MODAL
+function openModal(img,title){
+    document.getElementById("modal").style.display="block";
+    document.getElementById("modal-img").src="/static/"+img;
+    document.getElementById("modal-title").innerText=title;
+
+    let prob = document.getElementById("prob").innerText;
+
+    document.getElementById("modal-details").innerHTML =
+    "📊 Probability: "+prob+"<br><br>"+
+    "🔴 Tumor<br>🟢 Boundary<br>🌈 Heatmap";
+}
+
+// HISTORY MODAL
+function openHistory(time,prob){
+    document.getElementById("modal").style.display="block";
+    document.getElementById("modal-img").src="/static/overlay.png";
+    document.getElementById("modal-title").innerText="History Result";
+
+    document.getElementById("modal-details").innerHTML =
+    "📅 "+time+"<br>"+
+    "📊 Probability: "+prob+"%";
+}
+
+// CLOSE MODAL
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+
+// ESC KEY CLOSE
+document.addEventListener("keydown", function(e){
+    if(e.key==="Escape"){
+        closeModal();
+    }
+});
+</script>
+
+</body>
+</html>
